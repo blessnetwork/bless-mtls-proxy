@@ -288,6 +288,7 @@ export default fp(
 				try {
 					// swap the host from dest to the string value of upstream
 					const protocol = request.headers["x-forwarded-proto"] || "https";
+					fastify.log.info(`${protocol}://${request.headers.upstream}${dest}`);
 					const url = new URL(
 						dest as string,
 						`${protocol}://${request.headers.upstream}`,
