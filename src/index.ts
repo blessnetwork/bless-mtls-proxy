@@ -278,15 +278,27 @@ export default fp(
 				code: (arg0: any) => void;
 			},
 		) {
+			fastify.log.info("Handler called");
+			fastify.log.info(`Request URL: ${request.raw.url}`);
+			fastify.log.info(`Request Headers: ${JSON.stringify(request.headers)}`);
+			fastify.log.info(`Request Body: ${JSON.stringify(request.body)}`);
+
 			let dest = request.raw.url;
 			if (request.headers.upstream) {
-				// swap the host from dest to the string value of upstream
-				const protocol = request.headers["x-forwarded-proto"] || "https";
-				const url = new URL(
-					dest as string,
-					`${protocol}://${request.headers.upstream}`,
-				);
-				dest = url.toString();
+				try {
+					// swap the host from dest to the string value of upstream
+					const protocol = request.headers["x-forwarded-proto"] || "https";
+					const url = new URL(
+						dest as string,
+						`${protocol}://${request.headers.upstream}`,
+					);
+					dest = url.toString();
+					fastify.log.info(`Destination URL: ${dest}`);
+				} catch (error) {
+					fastify.log.error(`Error constructing URL: ${error.message}`);
+					reply.code(500).send({ error: "Internal Server Error" });
+					return;
+				}
 			}
 
 			reply.from(dest || "/", replyOpts);
