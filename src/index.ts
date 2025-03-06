@@ -278,19 +278,15 @@ export default fp(
 				code: (arg0: any) => void;
 			},
 		) {
-			const queryParamIndex = request.raw.url.indexOf("?");
-			let dest: any = request.raw.url.slice(
-				0,
-				queryParamIndex !== -1 ? queryParamIndex : undefined,
-			);
-			dest = dest.replace(this.prefix, rewritePrefix);
-
-			if (
-				dest === request.raw.url &&
-				!request.headers.upstream &&
-				request.raw.url.indexOf("upstream") === -1
-			) {
-				reply.code(404);
+			let dest = request.raw.url;
+			if (request.headers.upstream) {
+				// swap the host from dest to the string value of upstream
+				const protocol = request.headers["x-forwarded-proto"] || "https";
+				const url = new URL(
+					dest as string,
+					`${protocol}://${request.headers.upstream}`,
+				);
+				dest = url.toString();
 			}
 
 			reply.from(dest || "/", replyOpts);
