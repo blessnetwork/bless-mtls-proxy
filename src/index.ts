@@ -295,8 +295,9 @@ export default fp(
 					dest = url.toString();
 					fastify.log.info(`Destination URL: ${dest}`);
 				} catch (error) {
-					fastify.log.error(`Error constructing URL: ${error.message}`);
-					reply.code(500).send({ error: "Internal Server Error" });
+					const errorMessage = (error as Error).message;
+					fastify.log.error(`Error constructing URL: ${errorMessage}`);
+					reply.code(500);
 					return;
 				}
 			}
